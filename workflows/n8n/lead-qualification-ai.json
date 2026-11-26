@@ -1,0 +1,78 @@
+{
+  "name": "Inova AI - Lead Qualification (Safe Starter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inova-lead-qualification",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b9d2c881-0e11-4e1a-ae60-000000000001",
+      "name": "Receive lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? {};\nconst required = ['nome','email','interesse','mensagem'];\nconst missing = required.filter((key) => typeof body[key] !== 'string' || !body[key].trim());\nif (missing.length) return [{json:{statusCode:400,error:`Campos obrigatórios ausentes: ${missing.join(', ')}`}}];\nconst interest=body.interesse.toLowerCase();\nconst priority=/(automação|automacao|crm|\\bia\\b)/.test(interest)?'alta':'normal';\nreturn [{json:{statusCode:200,status:'qualificado',prioridade:priority,categoria:body.interesse.trim().slice(0,80),proxima_acao:priority==='alta'?'Contato comercial prioritário':'Adicionar à fila de qualificação'}}];"
+      },
+      "id": "b9d2c881-0e11-4e1a-ae60-000000000002",
+      "name": "Validate and qualify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { statusCode: $json.statusCode, body: $json } }}",
+        "options": {}
+      },
+      "id": "b9d2c881-0e11-4e1a-ae60-000000000003",
+      "name": "Return result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Receive lead": {
+      "main": [
+        [
+          {
+            "node": "Validate and qualify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and qualify": {
+      "main": [
+        [
+          {
+            "node": "Return result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

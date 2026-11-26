@@ -1,0 +1,19 @@
+name: Validate repository content
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate n8n JSON workflows
+        run: |
+          shopt -s nullglob
+          for file in workflows/n8n/*.json; do jq empty "$file"; done
+      - name: Detect common credential patterns
+        run: |
+          ! grep -RInE '(sk-[A-Za-z0-9]{12,}|gh[pousr]_[A-Za-z0-9]{12,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' . --exclude-dir=.git --exclude=validate.yml

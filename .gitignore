@@ -1,0 +1,9 @@
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+credentials*.json
+*.pem
+*.key
+node_modules/
+.DS_Store
